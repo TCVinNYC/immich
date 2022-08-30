@@ -1,24 +1,24 @@
 version: "3.8"
 
 services:
-  immich-server:
-    image: immich-server-dev:latest
-    build:
-      context: ../server
-      dockerfile: Dockerfile
-      target: builder
-    command: npm run start:dev immich
-    volumes:
-      - ../server:/usr/src/app
-      - ${UPLOAD_LOCATION}:/usr/src/app/upload
-      - /usr/src/app/node_modules
-    env_file:
-      - .env
-    environment:
-      - NODE_ENV=development
-    depends_on:
-      - redis
-      - database
+  # immich-server:
+  #   image: immich-server-dev:latest
+  #   build:
+  #     context: ../server
+  #     dockerfile: Dockerfile
+  #     target: builder
+  #   command: npm run start:dev immich
+  #   volumes:
+  #     - ../server:/usr/src/app
+  #     - ${UPLOAD_LOCATION}:/usr/src/app/upload
+  #     - /usr/src/app/node_modules
+  #   env_file:
+  #     - .env
+  #   environment:
+  #     - NODE_ENV=development
+  #   depends_on:
+  #     - redis
+  #     - database
 
   immich-machine-learning:
     image: immich-machine-learning-dev:latest

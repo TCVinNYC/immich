@@ -2,12 +2,25 @@ version: "3.8"
 
 services:
   immich-server:
-    image: altran1502/immich-server:release
-    entrypoint: ["/bin/sh", "./start-server.sh"]
+    image: immich-server:latest
+    build:
+      context: ../server
+      dockerfile: Dockerfile
+      target: builder
+    command: 
+      npm run start:debug immich &&
+      npm run start:debug microservices &&
+      npm run start:debug web
     volumes:
+      - ../server:/usr/src/app
+      #- ../server/apps/web:/usr/src/app/web
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
+      - /usr/src/app/node_modules
     env_file:
       - .env
+    ports:
+      - 3000:3000
+      - 24678:24678
     environment:
       - NODE_ENV=production
     depends_on:
@@ -15,39 +28,22 @@ services:
       - database
     restart: always
 
-  immich-microservices:
-    image: altran1502/immich-server:release
-    entrypoint: ["/bin/sh", "./start-microservices.sh"]
-    volumes:
-      - ${UPLOAD_LOCATION}:/usr/src/app/upload
-    env_file:
-      - .env
-    environment:
-      - NODE_ENV=production
-    depends_on:
-      - redis
-      - database
-    restart: always
-
-  immich-machine-learning:
-    image: altran1502/immich-machine-learning:release
-    entrypoint: ["/bin/sh", "./entrypoint.sh"]
-    volumes:
-      - ${UPLOAD_LOCATION}:/usr/src/app/upload
-    env_file:
-      - .env
-    environment:
-      - NODE_ENV=production
-    depends_on:
-      - database
-    restart: always
-
-  immich-web:
-    image: altran1502/immich-web:release
-    entrypoint: ["/bin/sh", "./entrypoint.sh"]
-    env_file:
-      - .env
-    restart: always
+  # immich-server:
+  #   build:
+  #     context: ../server
+  #     dockerfile: Dockerfile
+  #     target: dev
+  #   command: npm run start:debug microservices
+  #   env_file:
+  #     - .env
+  #   ports:
+  #     - 3000:3000
+  #     - 24678:24678
+  #   volumes:
+  #     - ../server:/usr/src/app
+  #     - ${UPLOAD_LOCATION}:/usr/src/app/upload
+  #     - /usr/src/app/node_modules
+  #   restart: always
 
   redis:
     container_name: immich_redis
@@ -70,9 +66,13 @@ services:
 
   immich-proxy:
     container_name: immich_proxy
-    image: altran1502/immich-proxy:release
+    image: immich-proxy-dev:latest
+    build:
+      context: ../nginx
+      dockerfile: Dockerfile
     ports:
       - 2283:80
+      - 2284:443
     logging:
       driver: none
     depends_on:
@@ -81,3 +81,16 @@ services:
 
 volumes:
   pgdata:
+
+  # immich-machine-learning:
+  #   image: altran1502/immich-machine-learning:release
+  #   entrypoint: ["/bin/sh", "./entrypoint.sh"]
+  #   volumes:
+  #     - ${UPLOAD_LOCATION}:/usr/src/app/upload
+  #   env_file:
+  #     - .env
+  #   environment:
+  #     - NODE_ENV=production
+  #   depends_on:
+  #     - database
+  #   restart: always
